@@ -171,7 +171,43 @@ def section_4_top10_bar(df: pd.DataFrame) -> None:
 
 
 # ─────────────────────────────────────────────
-# 구역 5, 6, ... : 새 그래프는 위와 같은 형태의 함수로 추가하고
+# 구역 5: 월 × 요일별 일관객 합계 (히트맵)
+# ─────────────────────────────────────────────
+INSIGHT_5 = "여기에 이 그래프로 알 수 있는 것을 한 문장으로 적어 주세요."
+WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"]  # 월요일부터 일요일 순서
+
+
+def section_5_month_weekday_heatmap(df: pd.DataFrame) -> None:
+    st.header("5. 월 × 요일별 일관객 합계")
+
+    # 날짜에서 월(1~12)과 요일(0=월요일 ... 6=일요일)을 뽑기
+    tmp = df.assign(월=df["날짜"].dt.month, 요일=df["날짜"].dt.dayofweek)
+    pivot = (
+        tmp.pivot_table(index="월", columns="요일", values="일관객", aggfunc="sum")
+        .reindex(columns=range(7))  # 월~일 순서로 고정
+        .fillna(0)
+    )
+    pivot.index = [f"{m}월" for m in pivot.index]
+    pivot.columns = WEEKDAYS
+
+    fig = px.imshow(
+        pivot,
+        color_continuous_scale="Blues",  # 진할수록 관객이 많음
+        aspect="auto",
+        labels=dict(x="요일", y="월", color="일관객 합계(명)"),
+        title="월 × 요일별 일관객 합계",
+    )
+    fig.update_traces(
+        hovertemplate="%{y} %{x}요일<br>일관객 합계: %{z:,.0f}명<extra></extra>"
+    )
+    fig.update_xaxes(side="top")
+    st.plotly_chart(fig, use_container_width=True)
+
+    show_insight(INSIGHT_5)
+
+
+# ─────────────────────────────────────────────
+# 구역 6, 7, ... : 새 그래프는 위와 같은 형태의 함수로 추가하고
 # 아래 main()에 한 줄만 넣으면 돼요.
 # ─────────────────────────────────────────────
 
@@ -194,7 +230,10 @@ def main() -> None:
     section_4_top10_bar(df)
     st.divider()
 
-    # section_5_...(df)
+    section_5_month_weekday_heatmap(df)
+    st.divider()
+
+    # section_6_...(df)
     # st.divider()
 
 
