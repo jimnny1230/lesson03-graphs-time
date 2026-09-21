@@ -62,7 +62,39 @@ def section_1_daily_audience(df: pd.DataFrame) -> None:
 
 
 # ─────────────────────────────────────────────
-# 구역 2, 3, ... : 새 그래프는 위와 같은 형태의 함수로 추가하고
+# 구역 2: 일관객 합계 상위 5편 비교
+# ─────────────────────────────────────────────
+INSIGHT_2 = "여기에 이 그래프로 알 수 있는 것을 한 문장으로 적어 주세요."
+TOP_N = 5
+
+
+def section_2_top5_compare(df: pd.DataFrame) -> None:
+    st.header("2. 일관객 합계 상위 5편 비교")
+
+    # 기간 내 일관객 합계가 가장 큰 5편 (합계 큰 순서)
+    top_movies = df.groupby("영화명")["일관객"].sum().nlargest(TOP_N).index.tolist()
+    top_df = df[df["영화명"].isin(top_movies)].sort_values("날짜")
+
+    fig = px.line(
+        top_df,
+        x="날짜",
+        y="일관객",
+        color="영화명",
+        category_orders={"영화명": top_movies},  # 범례·색 순서를 합계 순으로 고정
+        title="일관객 합계 상위 5편 - 날짜별 일관객",
+    )
+    fig.update_traces(
+        hovertemplate="%{fullData.name}<br>%{x|%Y-%m-%d}<br>일관객: %{y:,}명<extra></extra>"
+    )
+    fig.update_layout(xaxis_title="날짜", yaxis_title="일관객(명)", hovermode="closest")
+    st.plotly_chart(fig, use_container_width=True)
+    st.caption("범례의 영화명을 클릭하면 그 영화를 끄고 켤 수 있어요. 더블클릭하면 그 영화만 볼 수 있어요.")
+
+    show_insight(INSIGHT_2)
+
+
+# ─────────────────────────────────────────────
+# 구역 3, 4, ... : 새 그래프는 위와 같은 형태의 함수로 추가하고
 # 아래 main()에 한 줄만 넣으면 돼요.
 # ─────────────────────────────────────────────
 
@@ -76,7 +108,10 @@ def main() -> None:
     section_1_daily_audience(df)
     st.divider()
 
-    # section_2_...(df)
+    section_2_top5_compare(df)
+    st.divider()
+
+    # section_3_...(df)
     # st.divider()
 
 
