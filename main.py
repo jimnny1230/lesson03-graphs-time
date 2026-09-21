@@ -131,7 +131,47 @@ def section_3_daily_total(df: pd.DataFrame) -> None:
 
 
 # ─────────────────────────────────────────────
-# 구역 4, 5, ... : 새 그래프는 위와 같은 형태의 함수로 추가하고
+# 구역 4: 일관객 합계 TOP 10 영화 (가로 막대그래프)
+# ─────────────────────────────────────────────
+INSIGHT_4 = "여기에 이 그래프로 알 수 있는 것을 한 문장으로 적어 주세요."
+TOP_MOVIES = 10
+
+
+def section_4_top10_bar(df: pd.DataFrame) -> None:
+    st.header("4. 일관객 합계 TOP 10 영화")
+
+    # 영화별 일관객 합계와, 10위권에 든 날수
+    summary = (
+        df.groupby("영화명")
+        .agg(일관객합계=("일관객", "sum"), 십위권일수=("날짜", "nunique"))
+        .reset_index()
+        .nlargest(TOP_MOVIES, "일관객합계")  # 합계가 큰 순서로 정렬됨
+    )
+
+    fig = px.bar(
+        summary,
+        x="일관객합계",
+        y="영화명",
+        orientation="h",
+        custom_data=["십위권일수"],
+        title=f"일관객 합계 TOP {TOP_MOVIES}",
+    )
+    fig.update_traces(
+        hovertemplate=(
+            "%{y}<br>일관객 합계: %{x:,}명"
+            "<br>10위권에 든 날수: %{customdata[0]}일<extra></extra>"
+        )
+    )
+    # 관객이 많은 영화가 위에 오도록 y축 순서를 뒤집기
+    fig.update_yaxes(autorange="reversed")
+    fig.update_layout(xaxis_title="일관객 합계(명)", yaxis_title="")
+    st.plotly_chart(fig, use_container_width=True)
+
+    show_insight(INSIGHT_4)
+
+
+# ─────────────────────────────────────────────
+# 구역 5, 6, ... : 새 그래프는 위와 같은 형태의 함수로 추가하고
 # 아래 main()에 한 줄만 넣으면 돼요.
 # ─────────────────────────────────────────────
 
@@ -151,7 +191,10 @@ def main() -> None:
     section_3_daily_total(df)
     st.divider()
 
-    # section_4_...(df)
+    section_4_top10_bar(df)
+    st.divider()
+
+    # section_5_...(df)
     # st.divider()
 
 
