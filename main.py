@@ -94,7 +94,44 @@ def section_2_top5_compare(df: pd.DataFrame) -> None:
 
 
 # ─────────────────────────────────────────────
-# 구역 3, 4, ... : 새 그래프는 위와 같은 형태의 함수로 추가하고
+# 구역 3: 날짜별 10위권 일관객 합계 (영역 그래프)
+# ─────────────────────────────────────────────
+INSIGHT_3 = "여기에 이 그래프로 알 수 있는 것을 한 문장으로 적어 주세요."
+TOP_DAYS = 3
+
+
+def section_3_daily_total(df: pd.DataFrame) -> None:
+    st.header("3. 날짜별 10위권 일관객 합계")
+
+    # 날짜별로 그날 10위권 일관객을 모두 더함
+    daily = df.groupby("날짜", as_index=False)["일관객"].sum()
+    top_days = daily.nlargest(TOP_DAYS, "일관객")
+
+    fig = px.area(daily, x="날짜", y="일관객", title="날짜별 10위권 일관객 합계")
+    fig.update_traces(hovertemplate="%{x|%Y-%m-%d}<br>합계: %{y:,}명<extra></extra>")
+
+    # 합계가 가장 컸던 3일: 점으로 표시하고 날짜를 적기
+    fig.add_scatter(
+        x=top_days["날짜"],
+        y=top_days["일관객"],
+        mode="markers+text",
+        text=top_days["날짜"].dt.strftime("%Y-%m-%d"),
+        textposition="top center",
+        cliponaxis=False,
+        marker=dict(size=11, color="red", line=dict(width=1, color="white")),
+        name=f"합계 상위 {TOP_DAYS}일",
+        hovertemplate="%{x|%Y-%m-%d}<br>합계: %{y:,}명<extra></extra>",
+    )
+    # 위쪽에 글자가 들어갈 여백 확보
+    fig.update_yaxes(range=[0, daily["일관객"].max() * 1.15])
+    fig.update_layout(xaxis_title="날짜", yaxis_title="일관객 합계(명)", hovermode="closest")
+    st.plotly_chart(fig, use_container_width=True)
+
+    show_insight(INSIGHT_3)
+
+
+# ─────────────────────────────────────────────
+# 구역 4, 5, ... : 새 그래프는 위와 같은 형태의 함수로 추가하고
 # 아래 main()에 한 줄만 넣으면 돼요.
 # ─────────────────────────────────────────────
 
@@ -111,7 +148,10 @@ def main() -> None:
     section_2_top5_compare(df)
     st.divider()
 
-    # section_3_...(df)
+    section_3_daily_total(df)
+    st.divider()
+
+    # section_4_...(df)
     # st.divider()
 
 
